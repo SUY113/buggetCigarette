@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cashflow Demo</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.05);
+      --line:rgba(255,255,255,.12);
+      --text:#eaf0ff;
+      --muted:rgba(234,240,255,.7);
+      --good:#57f287;
+      --bad:#ff5c5c;
+      --accent:#7aa8ff;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 10% 0%, #14224a 0%, var(--bg) 60%),
+                  radial-gradient(1000px 800px at 100% 20%, #2a144a 0%, transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .brand h1{font-size:18px;margin:0}
+    .brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .pill{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      padding:8px 10px;border-radius:999px;
+      font-size:12px;color:var(--muted)
+    }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}}
+    .card{
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+      backdrop-filter: blur(10px);
+    }
+    .kpi{display:flex;gap:10px;align-items:flex-end;justify-content:space-between}
+    .kpi .label{font-size:12px;color:var(--muted)}
+    .kpi .value{font-size:28px;font-weight:800;letter-spacing:.2px}
+    .kpi .meta{font-size:12px;color:var(--muted);margin-top:6px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:520px){.row{grid-template-columns:1fr}}
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input, select, button{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+    }
+    input::placeholder{color:rgba(234,240,255,.45)}
+    button{
+      background: linear-gradient(180deg, rgba(122,168,255,.92), rgba(122,168,255,.62));
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      box-shadow: 0 10px 22px rgba(122,168,255,.22);
+    }
+    button:active{transform: translateY(1px)}
+    .btn2{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:none;
+      font-weight:700;
+    }
+    .quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .qbtn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;border-radius:999px;
+      font-size:12px;cursor:pointer;
+      user-select:none;
+    }
+    .qbtn:hover{border-color:rgba(122,168,255,.6)}
+    .status{margin-top:10px;font-size:12px;color:var(--muted)}
+    .status.ok{color:rgba(87,242,135,.95)}
+    .status.err{color:rgba(255,92,92,.95)}
+    .section-title{margin:14px 0 10px;font-size:13px;color:var(--muted)}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{
+      display:flex;justify-content:space-between;gap:10px;
+      padding:10px 12px;border-radius:14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .item .left{min-width:0}
+    .item .t{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .item .s{font-size:12px;color:var(--muted);margin-top:2px}
+    .item .amt{font-weight:900}
+    .neg{color:var(--bad)}
+    .footer{margin:18px 0 10px;color:rgba(234,240,255,.45);font-size:12px;text-align:center}
+    details{border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.04)}
+    summary{cursor:pointer;color:var(--muted);font-size:12px}
+    .hint{font-size:12px;color:rgba(234,240,255,.55);margin-top:8px;line-height:1.35}
+    .quick-title{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+    .linklike{font-size:12px;color:rgba(234,240,255,.65);cursor:pointer;user-select:none}
+    .linklike:hover{color:rgba(122,168,255,.9)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <h1>💸 Cashflow Demo</h1>
+        <div class="sub">Web nhập chi tiêu • Worker + KV xử lý • Telegram notify (group mặc định)</div>
+      </div>
+      <div class="pill" id="clock">--</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="kpi">
+          <div>
+            <div class="label">Còn lại hôm nay</div>
+            <div class="value" id="dailyRemaining">--</div>
+            <div class="meta">Hạn mức: <b id="dailyLimit">--</b> • Đã chi: <b id="spentToday">--</b></div>
+          </div>
+          <div class="pill" id="todayTag">Today</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="kpi">
+          <div>
+            <div class="label">Còn lại tháng</div>
+            <div class="value" id="monthRemaining">--</div>
+            <div class="meta">Ngân sách: <b id="monthlyBudget">--</b> • Đã chi: <b id="monthTotal">--</b></div>
+          </div>
+          <div class="pill" id="monthTag">Month</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <details style="margin-top:0px">
+        <summary>⚙️ Settings – Thiết lập ngân sách tháng</summary>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Ngân sách tháng (VND)</label>
+            <input id="monthlyBudgetInput" inputmode="numeric" pattern="[0-9]*" placeholder="12,000,000" />
+          </div>
+          <div>
+            <label>Daily limit (VND) — để trống = auto chia theo ngày còn lại</label>
+            <input id="dailyLimitInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" />
+          </div>
+        </div>
+        <div class="row">
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn2" id="saveCfg" type="button">Lưu settings</button>
+          </div>
+        </div>
+      </details>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>Category</label>
+          <select id="category">
+            <option value="food">🍜 Ăn uống</option>
+            <option value="transport">🛵 Di chuyển</option>
+            <option value="shopping">🛍️ Mua sắm</option>
+            <option value="health">🩺 Sức khoẻ</option>
+            <option value="bill">🧾 Hoá đơn</option>
+            <option value="other">✨ Khác</option>
+          </select>
+        </div>
+        <div>
+          <label>Số tiền (VND)</label>
+          <input id="amount" inputmode="numeric" pattern="[0-9]*" placeholder="100,000" />
+        </div>
+      </div>
+
+      <label>Lý do</label>
+      <input id="reason" placeholder="vd: cafe / ăn trưa / đổ xăng..." />
+
+      <div class="quick-title">
+        <div class="section-title" style="margin:10px 0 0">⚡ Gợi ý nhanh (cá nhân hoá)</div>
+        <div class="linklike" id="clearSuggestions">Xoá gợi ý</div>
+      </div>
+      <div class="quick" id="smartQuick"></div>
+
+      <div class="quick-title">
+        <div class="section-title" style="margin:10px 0 0">🚀 Presets</div>
+        <div class="linklike" id="pinCurrent">Ghim mẫu hiện tại</div>
+      </div>
+      <div class="quick" id="presetQuick">
+        <div class="qbtn" data-amt="15000" data-cat="food" data-reason="trà đá">+ 15k trà đá</div>
+        <div class="qbtn" data-amt="35000" data-cat="food" data-reason="cafe">+ 35k cafe</div>
+        <div class="qbtn" data-amt="70000" data-cat="food" data-reason="ăn trưa">+ 70k ăn trưa</div>
+        <div class="qbtn" data-amt="50000" data-cat="transport" data-reason="đổ xăng">+ 50k xăng</div>
+        <div class="qbtn" data-amt="100000" data-cat="shopping" data-reason="mua lặt vặt">+ 100k mua đồ</div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button id="submit">Ghi chi tiêu</button>
+        <button class="btn2" id="refreshBtn" type="button">Refresh</button>
+      </div>
+
+      <div class="status" id="status">Ready.</div>
+    </div>
+
+    <div class="section-title">🧾 Chi tiêu gần nhất</div>
+    <div class="card">
+      <div class="list" id="history"></div>
+    </div>
+
+    <div class="footer">Demo-only • No auth • Data in Cloudflare KV • Personalized quick suggestions stored in your browser</div>
+  </div>
+
+<script>
+  // ====== FIXED CONFIG (hidden from UI) ======
+  const WORKER_BASE = "https://budget.starlinksatellitewifi.workers.dev";
+  const UID = "demo";
+
+  // ====== helpers ======
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => (Number(n) || 0).toLocaleString("en-US") + "đ";
+
+  function setStatus(text, type="") {
+    const el = $("status");
+    el.textContent = text;
+    el.className = "status " + (type || "");
+  }
+
+  function tickClock() {
+    $("clock").textContent = new Date().toLocaleString("vi-VN");
+  }
+  setInterval(tickClock, 1000); tickClock();
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ====== Comma formatting inputs ======
+  function bindCommaInput(id){
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", (e) => {
+      let v = e.target.value.replace(/[^\d]/g, "");
+      if (!v) { e.target.value = ""; return; }
+      e.target.value = Number(v).toLocaleString("en-US");
+    });
+  }
+  bindCommaInput("amount");
+  bindCommaInput("monthlyBudgetInput");
+  bindCommaInput("dailyLimitInput");
+
+  // ====== Personalization (learn user's reason patterns) ======
+  // Store top quick actions locally (per browser/device) for fast re-use
+  const SUG_KEY = "cashflow_suggestions_v1";
+  const MAX_SUG = 10;
+
+  function normalizeReason(r){
+    return (r || "").trim().toLowerCase().replace(/\s+/g, " ").slice(0, 60);
+  }
+  function parseNumberLike(v){
+    const n = parseInt(String(v || "").replace(/[^\d]/g, ""), 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function loadSuggestions(){
+    try{
+      const raw = localStorage.getItem(SUG_KEY);
+      const data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    }catch{ return []; }
+  }
+  function saveSuggestions(list){
+    localStorage.setItem(SUG_KEY, JSON.stringify(list.slice(0, MAX_SUG)));
+  }
+
+  // Weight: frequency + recency
+  function scoreItem(it){
+    const now = Date.now();
+    const ageDays = (now - (it.lastTs || 0)) / (1000*60*60*24);
+    const recency = Math.max(0, 30 - ageDays); // 0..30
+    return (it.count || 0) * 10 + recency;
+  }
+
+  function upsertSuggestion({category, amount, reason}){
+    const r = normalizeReason(reason);
+    const a = parseNumberLike(amount);
+    if (!r || a <= 0) return;
+
+    const list = loadSuggestions();
+    const key = `${category}|${a}|${r}`;
+    const found = list.find(x => x.key === key);
+    if (found){
+      found.count = (found.count || 0) + 1;
+      found.lastTs = Date.now();
+    } else {
+      list.push({
+        key,
+        category,
+        amount: a,
+        reason: r,
+        count: 1,
+        lastTs: Date.now()
+      });
+    }
+
+    // Sort by score desc
+    list.sort((x,y) => scoreItem(y) - scoreItem(x));
+    saveSuggestions(list);
+  }
+
+  function renderSmartQuick(){
+    const el = $("smartQuick");
+    const list = loadSuggestions().slice(0, 6); // show top 6
+    if (!list.length){
+      el.innerHTML = `<div class="hint">Chưa có gợi ý cá nhân. Hãy ghi 2–3 khoản chi, hệ thống sẽ tự học.</div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(x => {
+      const label = `+ ${money(x.amount).replace("đ","")} ${escapeHtml(x.reason)}`;
+      return `<div class="qbtn" data-amt="${x.amount}" data-cat="${escapeHtml(x.category)}" data-reason="${escapeHtml(x.reason)}">${label}</div>`;
+    }).join("");
+
+    // Bind click
+    el.querySelectorAll(".qbtn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await submitExpense({
+          uid: UID,
+          category: btn.dataset.cat,
+          amount: btn.dataset.amt,
+          reason: btn.dataset.reason
+        });
+      });
+    });
+  }
+
+  $("clearSuggestions").onclick = () => {
+    localStorage.removeItem(SUG_KEY);
+    renderSmartQuick();
+    setStatus("Đã xoá gợi ý cá nhân hoá.", "ok");
+  };
+
+  // "Pin current": turn current fields into a suggestion immediately
+  $("pinCurrent").onclick = () => {
+    const category = $("category").value;
+    const amount = $("amount").value;
+    const reason = $("reason").value;
+    upsertSuggestion({ category, amount, reason });
+    renderSmartQuick();
+    setStatus("Đã ghim mẫu hiện tại vào gợi ý nhanh.", "ok");
+  };
+
+  async function refresh() {
+    try{
+      const s = await fetch(`${WORKER_BASE}/api/summary?uid=${encodeURIComponent(UID)}`).then(r => r.json());
+      if (!s.ok) throw new Error("summary_error");
+
+      $("todayTag").textContent = s.day;
+      $("monthTag").textContent = s.month;
+
+      $("dailyRemaining").textContent = money(s.dailyRemaining);
+      $("dailyLimit").textContent = money(s.dailyLimit);
+      $("spentToday").textContent = money(s.spentToday);
+
+      $("monthRemaining").textContent = money(s.monthRemaining);
+      $("monthlyBudget").textContent = money(s.monthlyBudget);
+      $("monthTotal").textContent = money(s.monthTotal);
+
+      const h = await fetch(`${WORKER_BASE}/api/history?uid=${encodeURIComponent(UID)}&month=${encodeURIComponent(s.month)}`).then(r => r.json());
+      const list = (h.list || []).slice().reverse().slice(0, 12);
+
+      $("history").innerHTML = list.length ? list.map(x => {
+        const title = `${x.category} • ${x.reason || "no reason"}`;
+        const time = new Date(x.ts * 1000).toLocaleTimeString("vi-VN");
+        return `
+          <div class="item">
+            <div class="left">
+              <div class="t">${escapeHtml(title)}</div>
+              <div class="s">${x.day} • ${time}</div>
+            </div>
+            <div class="amt neg">-${money(x.amount)}</div>
+          </div>`;
+      }).join("") : `<div class="hint">Chưa có dữ liệu.</div>`;
+
+      setStatus("Synced ✓", "ok");
+    }catch(e){
+      setStatus("Cannot load. Check Worker deployment.", "err");
+    }
+  }
+
+  async function submitExpense(payload) {
+    setStatus("Sending...", "");
+    try {
+      const r = await fetch(`${WORKER_BASE}/api/expense`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "expense_error");
+
+      // Learn from user's behavior (category + amount + reason)
+      upsertSuggestion({
+        category: payload.category,
+        amount: payload.amount,
+        reason: payload.reason
+      });
+      renderSmartQuick();
+
+      setStatus("Logged ✓ Telegram will notify (default group in Worker).", "ok");
+      await refresh();
+    } catch (e) {
+      setStatus("Error: " + e.message, "err");
+    }
+  }
+
+  // Submit expense
+  $("submit").onclick = async () => {
+    const category = $("category").value;
+    const amount = ($("amount").value || "").trim(); // formatted "100,000"
+    const reason = ($("reason").value || "").trim();
+
+    if (!amount) return setStatus("Please input amount.", "err");
+
+    await submitExpense({ uid: UID, category, amount, reason });
+    $("amount").value = "";
+    $("reason").value = "";
+  };
+
+  // Preset quick buttons (existing)
+  document.querySelectorAll("#presetQuick .qbtn").forEach(el => {
+    el.addEventListener("click", async () => {
+      await submitExpense({
+        uid: UID,
+        category: el.dataset.cat,
+        amount: el.dataset.amt,
+        reason: el.dataset.reason
+      });
+    });
+  });
+
+  // Save settings (budget + daily limit only)
+  $("saveCfg").onclick = async () => {
+    const monthlyBudget = ($("monthlyBudgetInput").value || "").trim();
+    const dailyLimit = ($("dailyLimitInput").value || "").trim();
+
+    const payload = { uid: UID };
+    if (monthlyBudget) payload.monthlyBudget = monthlyBudget;
+    if (dailyLimit) payload.dailyLimit = dailyLimit;
+
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/config`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || "config_error");
+      setStatus("Settings saved ✓", "ok");
+      await refresh();
+    }catch(e){
+      setStatus("Save settings error: " + e.message, "err");
+    }
+  };
+
+  $("refreshBtn").onclick = refresh;
+
+  // Init
+  renderSmartQuick();
+  refresh();
+</script>
+</body>
+</html>
